@@ -16,6 +16,7 @@ fn main() {
         // Получаем ввод предположения
         let mut guess: String = String::new();
         let input: Result<usize, io::Error> = io::stdin().read_line(&mut guess);
+        // Убираем \n в конце
         guess.pop();
         // При ошибке ввода, длины предположения или парсинга в число просим ввести снова
         if input.is_err() || guess.len() != 4 || guess.parse::<u16>().is_err()  { 

@@ -1,9 +1,35 @@
 use std::io;
 
 fn main() {
+    let mut variant: String = String::new();
+    let mut is_err: bool = false;
+    loop {
+        match is_err {
+            false => println!("Если хотите загадывать введите 1, если хотите угадывать введите 2"),
+            true => println!("Ошибка! Повторите ввод! Если хотите загадывать введите 1, если хотите угадывать введите 2"),
+        }
+        let input: Result<usize, io::Error> = io::stdin().read_line(&mut variant);
+        if input.is_ok() {
+            variant.pop();
+            if !(variant == "1" || variant == "2") {
+                is_err = true;
+                continue;
+            }
+            if variant == "1" {
+                wisher();
+            } else {
+                guesser();
+            }
+            break;
+        } else {
+            is_err = true;
+        }
+    }
+}
+
+fn guesser() {
     // Загадываем 4 числа
     let digits: String = get_digits();
-    println!("Загадано: {}", digits);
     // Устанавливаем 5 попыток
     let mut attemts: u8 = 5;
     println!("Введите 4 цифры:");
@@ -31,6 +57,52 @@ fn main() {
         // Если предположение верно, объявляем победу
         if guess == digits {
             println!("Вы угадали! Победа!");
+            break;
+        } else {
+            // Иначе считаем количество быков, коров, затем выводим быков и коров (считаем совпадения и вычитаем быков)
+            let bulls = get_bulls(digits.as_str(), guess.as_str());
+            println!("Количество быков: {}", bulls);
+            println!("Количество коров: {}", get_cows(digits.as_str(), guess.as_str()) - bulls);
+            // Тратим попытку
+            attemts -= 1;
+            println!("Осталось попыток: {}", attemts);
+        }
+    }
+}
+
+fn wisher() {
+    // Устанавливаем 5 попыток
+    let mut attemts: u8 = 5;
+    println!("Введите 4 цифры:");
+    // Получаем ввод загаданного
+    let mut digits: String = String::new();
+    loop {
+        let input: Result<usize, io::Error> = io::stdin().read_line(&mut digits);
+        digits.pop();
+        // При ошибке ввода, длины предположения или парсинга в число просим ввести снова
+        if input.is_err() || digits.len() != 4 || digits.parse::<u16>().is_err()  { 
+            println!("Ошибка! Повторите ввод...");
+            continue;
+        };
+        // Если в предположении число повторяется больше 1 раза просим ввести снова
+        if char_repeats(&digits) {
+            println!("Ошибка! В вашем вводе есть 2 одинаковых числа! Повторите ввод...");
+            continue;
+        }
+        break;
+    }
+    loop {
+        // Проверям остались ли попытки
+        if attemts == 0 {
+            println!("Попытки закончились! Вы победили!");
+            break;
+        }
+        let mut guess: String = get_digits();
+        // Убираем \n в конце
+        guess.pop();
+        // Если предположение верно, объявляем победу
+        if guess == digits {
+            println!("Машина угадала! Поражение!");
             break;
         } else {
             // Иначе считаем количество быков, коров, затем выводим быков и коров (считаем совпадения и вычитаем быков)
